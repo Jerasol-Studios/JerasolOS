@@ -26,7 +26,7 @@ jobs:
       - name: Install Essential Android Compiler Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev
+          sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev repo
 
       - name: Initialize Repo Source and Synchronize Files
         run: |
@@ -34,17 +34,11 @@ jobs:
           git config --global user.email "developer@jerasol.com"
           git config --global user.name "Jerasol Developer"
 
-          # Download and configure Google's repo tool safely
-          mkdir -p ~/bin
-          curl -s https://googleapis.com > ~/bin/repo
-          chmod a+x ~/bin/repo
-          export PATH=~/bin:$PATH
-
-          # Setup and synchronize the source files
+          # Setup and synchronize the source files directly using the system tool
           mkdir workspace
           cd workspace
-          ~/bin/repo init -u https://github.com -b lineage-20.0 --git-lfs --no-clone-bundle
-          ~/bin/repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+          repo init -u https://github.com -b lineage-20.0 --git-lfs --no-clone-bundle
+          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Compile Custom Jerasol System Image
         run: |
