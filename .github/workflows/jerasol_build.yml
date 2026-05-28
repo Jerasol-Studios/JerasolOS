@@ -30,16 +30,20 @@ jobs:
 
       - name: Initialize Repo Source and Synchronize Files
         run: |
+          # Configure Git profile to satisfy Repo tool requirements
+          git config --global user.email "developer@jerasol.com"
+          git config --global user.name "Jerasol Developer"
+
           # Download and configure Google's repo tool safely
           mkdir -p ~/bin
-          curl https://googleapis.com > ~/bin/repo
+          curl -s https://googleapis.com > ~/bin/repo
           chmod a+x ~/bin/repo
           export PATH=~/bin:$PATH
 
           # Setup and synchronize the source files
           mkdir workspace
           cd workspace
-          ~/bin/repo init -u https://github.com -b lineage-23.2 --git-lfs --no-clone-bundle
+          ~/bin/repo init -u https://github.com -b lineage-20.0 --git-lfs --no-clone-bundle
           ~/bin/repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Compile Custom Jerasol System Image
