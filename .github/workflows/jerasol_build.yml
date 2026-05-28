@@ -7,16 +7,21 @@ jobs:
   build-jerasol-os:
     runs-on: ubuntu-latest
     steps:
-      - name: Allocate High-Capacity Storage Workspace
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 51200
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-android: 'true' # Removes default tools to make room for AOSP
-
       - name: Checkout Jerasol Custom Repository Source
         uses: actions/checkout@v4
+
+      - name: Maximize System Disk Space Safely
+        run: |
+          echo "==> Before cleanup storage status:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/.ghcup
+          sudo apt-get clean
+          echo "==> After cleanup storage status:"
+          df -h
 
       - name: Install Essential Android Compiler Dependencies
         run: |
@@ -27,7 +32,7 @@ jobs:
         run: |
           mkdir workspace
           cd workspace
-          repo init -u https://github.com/LineageOS/android.git -b lineage-23.2 --git-lfs
+          repo init -u https://github.com -b lineage-23.2 --git-lfs
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Compile Custom Jerasol System Image
