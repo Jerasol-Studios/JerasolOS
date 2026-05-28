@@ -34,15 +34,15 @@ jobs:
           git config --global user.email "developer@jerasol.com"
           git config --global user.name "Jerasol Developer"
 
-          # Setup and synchronize the source files directly using the system tool
-          mkdir workspace
-          cd workspace
-          repo init -u https://github.com -b lineage-20.0 --git-lfs --no-clone-bundle
+          # Setup and synchronize the source files using the official full URL path
+          mkdir -p jerasol_workspace
+          cd jerasol_workspace
+          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --git-lfs --no-clone-bundle
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Compile Custom Jerasol System Image
         run: |
-          cd workspace
+          cd jerasol_workspace
           source build/envsetup.sh
           lunch lineage_emulator_x86_64-userdebug
           mka systemimage -j$(nproc --all)
@@ -51,4 +51,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Jerasol-OS-System-Image
-          path: workspace/out/target/product/emulator_x86_64/system.img
+          path: jerasol_workspace/out/target/product/emulator_x86_64/system.img
