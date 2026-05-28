@@ -37,7 +37,7 @@ jobs:
           # Setup and synchronize the source files directly using the system tool
           mkdir workspace
           cd workspace
-        repo init -u https://github.com/LineageOS/android_manifest.git -b lineage-20.0 --git-lfs --no-clone-bundle
+          repo init -u https://github.com -b lineage-20.0 --git-lfs --no-clone-bundle
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Compile Custom Jerasol System Image
