@@ -26,36 +26,29 @@ jobs:
       - name: Install Essential Android Compiler Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev repo
+          sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev repo
 
       - name: Initialize Repo Source and Synchronize Files
         run: |
           # Configure Git profile to satisfy Repo tool requirements
           git config --global user.email "developer@jerasol.com"
           git config --global user.name "Jerasol Developer"
-
-          # Setup and synchronize the source files using a optimized shallow sync
-          mkdir jerasol_workspace
+          
+          # Setup and synchronize the source files using an optimized shallow sync
+          mkdir -p jerasol_workspace
           cd jerasol_workspace
-          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-clone-bundle
-          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags --current-branch
+          repo init -u https://github.com -b lineage-20.0 --depth=1 --git-lfs --no-tags
+          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Compile Custom Jerasol System Image
         run: |
           cd jerasol_workspace
-          
-          # Fixed path pointer targeting the internal build environment script
-          source build/make/envsetup.sh
-          
-          # Initialize target configurations with strict compilation rules
-          lunch lineage_emulator_x86_64-userdebug
-          export WITHOUT_CHECK_API=true
-          
-          # Execute the final compilation sequence
+          source build/envsetup.sh
+          lunch aosp_arm64-userdebug
           mka systemimage -j$(nproc --all)
 
       - name: Upload Finished OS Artifacts for Download
         uses: actions/upload-artifact@v4
         with:
           name: Jerasol-OS-System-Image
-          path: jerasol_workspace/out/target/product/emulator_x86_64/system.img
+          path: jerasol_workspace/out/target/product/generic_arm64/system.img
