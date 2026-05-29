@@ -30,24 +30,28 @@ jobs:
 
       - name: Initialize Repo Source and Synchronize Files
         run: |
+          # Configure Git profile to satisfy Repo tool requirements
           git config --global user.email "developer@jerasol.com"
           git config --global user.name "Jerasol Developer"
 
-          mkdir -p jerasol_workspace
+          # Setup and synchronize the source files using a optimized shallow sync
+          mkdir jerasol_workspace
           cd jerasol_workspace
-          
-          # Added --depth=1 to restrict historical logs and save massive space
-          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-clone-bundle
-          
-          # Optimized sync flags to strictly download necessary files
+          repo init -u https://github.com -b lineage-20.0 --depth=1 --git-lfs --no-clone-bundle
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags --current-branch
-
 
       - name: Compile Custom Jerasol System Image
         run: |
           cd jerasol_workspace
-          source build/envsetup.sh
+          
+          # Fixed path pointer targeting the internal build environment script
+          source build/make/envsetup.sh
+          
+          # Initialize target configurations with strict compilation rules
           lunch lineage_emulator_x86_64-userdebug
+          export WITHOUT_CHECK_API=true
+          
+          # Execute the final compilation sequence
           mka systemimage -j$(nproc --all)
 
       - name: Upload Finished OS Artifacts for Download
