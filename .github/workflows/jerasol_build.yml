@@ -37,7 +37,7 @@ jobs:
           # Setup and synchronize the source files using an optimized shallow sync
           mkdir -p jerasol_workspace
           cd jerasol_workspace
-          repo init -u https://github.com -b lineage-20.0 --depth=1 --git-lfs --no-tags
+          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Compile Custom Jerasol System Image
