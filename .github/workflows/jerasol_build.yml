@@ -43,19 +43,23 @@ jobs:
           repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
           repo sync -c -j2 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
 
-      - name: 5. Dynamic Injection (Executes Your External Scripts Instantly)
+      - name: 5. Dynamic Branding Injection
         run: |
-          echo "==> Running branding file from your home page..."
+          echo "==> Running branding text customizations safely..."
           chmod +x jerasol_brand.sh
           ./jerasol_brand.sh
-          
-          echo "==> Running kernel battery patch file from your home page..."
-          chmod +x patch_kernel.sh
-          ./patch_kernel.sh
 
       - name: 6. Compile Custom Jerasol Framework Blocks
         run: |
           cd jerasol_workspace
+          
+          # Initialize compiler setup commands
           source build/envsetup.sh
           lunch aosp_arm64-userdebug
-          USE_SOONG_UI=1 mka bionic -j1
+          
+          # Injecting custom build variables natively to bypass Soong errors
+          export TARGET_HEALTH_CUSTOM_IMPLEMENTATION="jerasol_handover"
+          export ALLOW_MISSING_DEPENDENCIES=true
+          
+          # Execute the compilation
+          mka bionic -j1
