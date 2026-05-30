@@ -12,10 +12,7 @@ jobs:
 
       - name: Maximize Disk Space and Allocate Virtual Memory Swap
         run: |
-          echo "==> Before cleanup storage status:"
-          df -h
-          
-          echo "==> Purging massive pre-installed system bloat modules..."
+          echo "==> Clearing massive pre-installed system bloat modules..."
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/share/swift /usr/local/.ghcup
           sudo rm -rf /opt/hostedtoolcache
           sudo rm -rf /usr/local/share/powershell
@@ -30,9 +27,7 @@ jobs:
           sudo chmod 600 /jerasol_swap
           sudo mkswap /jerasol_swap
           sudo swapon /jerasol_swap
-          
-          echo "==> After intensive cleanup storage status:"
-          df -h
+          free -h
 
       - name: Install Essential Android Compiler Dependencies
         run: |
@@ -41,21 +36,19 @@ jobs:
 
       - name: Initialize Repo Source and Synchronize Files
         run: |
+          # 1. Set up Git global parameters
           git config --global user.email "developer@jerasol.com"
           git config --global user.name "Jerasol Developer"
           
-          # Stable official Google Git repo tool binary delivery
+          # 2. Download a localized, raw executable Repo binary tool from official stable source
           mkdir -p bin
           curl https://googlesource.com | base64 --decode > bin/repo
           chmod a+x bin/repo
           
+          # 3. Initialize workspace and sync using your exact corrected target URL path
           mkdir -p jerasol_workspace
           cd jerasol_workspace
-          
-          # Initialize with aggressive depth limits
           ../bin/repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
-          
-          # Optimized sync dropping heavy binary history tracks to save space
           ../bin/repo sync -c -j2 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
 
       - name: Compile Custom Jerasol Framework Blocks
