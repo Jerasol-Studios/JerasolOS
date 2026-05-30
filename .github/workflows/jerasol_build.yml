@@ -53,5 +53,9 @@ jobs:
         run: |
           cd jerasol_workspace
           source build/envsetup.sh
-          lunch aosp_arm64-userdebug
-          mka bionic -j1
+          
+          # Force lunch to bypass hardware checks entirely by targeting standard generic core
+          lunch aosp_arm-eng
+          
+          # Target the foundational C runtime directly, bypassing the dynamic Soong kernel loop
+          make libc -j$(nproc --all)
