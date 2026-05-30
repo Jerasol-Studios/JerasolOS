@@ -16,11 +16,14 @@ jobs:
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/share/swift /usr/local/.ghcup
           sudo apt-get clean
           
-          echo "==> Creating 12GB Memory Swap File to prevent out-of-RAM crashes..."
-          sudo fallocate -l 12G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
+          echo "==> Safety disabling any active system swap blocks..."
+          sudo swapoff -a || true
+          
+          echo "==> Creating unique 12GB Memory Swap File..."
+          sudo dd if=/dev/zero of=/jerasol_swap bs=1M count=12288
+          sudo chmod 600 /jerasol_swap
+          sudo mkswap /jerasol_swap
+          sudo swapon /jerasol_swap
           free -h
 
       - name: Install Essential Android Compiler Dependencies
@@ -34,7 +37,7 @@ jobs:
           git config --global user.name "Jerasol Developer"
           mkdir -p jerasol_workspace
           cd jerasol_workspace
-          repo init -u https://github.com -b lineage-20.0 --depth=1 --git-lfs --no-tags
+          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
           repo sync -c -j2 --force-sync --no-clone-bundle --no-tags
 
       - name: Compile Custom Jerasol Framework Blocks
@@ -42,6 +45,4 @@ jobs:
           cd jerasol_workspace
           source build/envsetup.sh
           lunch aosp_arm64-userdebug
-          
-          # Throttling to 1 thread (-j1) to ensure the server never runs out of RAM
           mka bionic -j1
