@@ -53,7 +53,7 @@ jobs:
           cd jerasol_workspace
           
           # Initialize with aggressive depth limits
-          ../bin/repo init -u https://github.com -b lineage-20.0 --depth=1 --git-lfs --no-tags
+          ../bin/repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
           
           # Optimized sync dropping heavy binary history tracks to save space
           ../bin/repo sync -c -j2 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
