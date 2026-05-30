@@ -50,7 +50,12 @@ jobs:
           cd jerasol_workspace
           ../bin/repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
           ../bin/repo sync -c -j2 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
-
+      
+      - name: Inject Custom Jerasol Kernel Power Patches
+        run: |
+          chmod +x patch_kernel.sh
+          ./patch_kernel.sh
+      
       - name: Compile Custom Jerasol Framework Blocks
         run: |
           cd jerasol_workspace
