@@ -40,7 +40,7 @@ jobs:
           mkdir -p jerasol_workspace
           cd jerasol_workspace
           
-          repo init -u https://github.com -b lineage-20.0 --depth=1 --git-lfs --no-tags
+          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
           repo sync -c -j2 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
 
       - name: 5. Dynamic Injection (Executes Your External Scripts Instantly)
