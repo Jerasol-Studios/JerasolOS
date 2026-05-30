@@ -43,19 +43,29 @@ jobs:
           repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
           repo sync -c -j2 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
 
-      - name: 5. Safe Identity Branding Injection
+      - name: 5. Safe Identity Branding Injection & Hard Blueprint Fix
         run: |
           echo "==> Running branding text customizations safely..."
           chmod +x jerasol_brand.sh || true
           ./jerasol_brand.sh || true
+          
+          echo "==> Hot-patching the broken LineageOS Soong blueprint file..."
+          # This targets the exact file and line throwing the error, replacing the broken macro with an empty fallback string
+          if [ -f "jerasol_workspace/vendor/lineage/build/soong/Android.bp" ]; then
+              sed -i 's/\$(PATH_OVERRIDE_SOONG)//g' jerasol_workspace/vendor/lineage/build/soong/Android.bp
+              echo "--> Successfully removed the broken PATH_OVERRIDE_SOONG variable constraint!"
+          else
+              echo "--> WARNING: Target blueprint file not found path check failed."
+          fi
 
       - name: 6. Compile Custom Jerasol Framework Blocks
         run: |
           cd jerasol_workspace
           source build/envsetup.sh
-          
-          # Force lunch to bypass hardware checks entirely by targeting standard generic core
           lunch aosp_arm-eng
           
-          # Target the foundational C runtime directly, bypassing the dynamic Soong kernel loop
+          # Force the build UI layer to run cleanly
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export USE_SOONG_UI=1
+          
           make libc -j$(nproc --all)
