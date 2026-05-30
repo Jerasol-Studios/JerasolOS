@@ -1,7 +1,7 @@
 name: Compile Jerasol OS Image
 
 on:
-  workflow_dispatch: # Allows you to manually click "Run" in your browser
+  workflow_dispatch:
 
 jobs:
   build-jerasol-os:
@@ -10,18 +10,18 @@ jobs:
       - name: Checkout Jerasol Custom Repository Source
         uses: actions/checkout@v4
 
-      - name: Maximize System Disk Space Safely
+      - name: Maximize Disk Space and Allocate Virtual Memory Swap
         run: |
-          echo "==> Before cleanup storage status:"
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/share/swift
-          sudo rm -rf /usr/local/.ghcup
+          echo "==> Clearing factory junk files..."
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/share/swift /usr/local/.ghcup
           sudo apt-get clean
-          echo "==> After cleanup storage status:"
-          df -h
+          
+          echo "==> Creating 12GB Memory Swap File to prevent out-of-RAM crashes..."
+          sudo fallocate -l 12G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
 
       - name: Install Essential Android Compiler Dependencies
         run: |
@@ -30,25 +30,18 @@ jobs:
 
       - name: Initialize Repo Source and Synchronize Files
         run: |
-          # Configure Git profile to satisfy Repo tool requirements
           git config --global user.email "developer@jerasol.com"
           git config --global user.name "Jerasol Developer"
-          
-          # Setup and synchronize the source files using an optimized shallow sync
           mkdir -p jerasol_workspace
           cd jerasol_workspace
-          repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --depth=1 --git-lfs --no-tags
-          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+          repo init -u https://github.com -b lineage-20.0 --depth=1 --git-lfs --no-tags
+          repo sync -c -j2 --force-sync --no-clone-bundle --no-tags
 
-      - name: Compile Custom Jerasol System Image
+      - name: Compile Custom Jerasol Framework Blocks
         run: |
           cd jerasol_workspace
           source build/envsetup.sh
           lunch aosp_arm64-userdebug
-          mka systemimage -j$(nproc --all)
-
-      - name: Upload Finished OS Artifacts for Download
-        uses: actions/upload-artifact@v4
-        with:
-          name: Jerasol-OS-System-Image
-          path: jerasol_workspace/out/target/product/generic_arm64/system.img
+          
+          # Throttling to 1 thread (-j1) to ensure the server never runs out of RAM
+          mka bionic -j1
